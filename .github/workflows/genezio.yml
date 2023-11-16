@@ -1,0 +1,41 @@
+name: Deploy to genezio
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: project
+      - uses: actions/checkout@v3
+        with:
+          repository: "Genez-io/genezio"
+          ref: dev
+          path: genezio
+      - uses: actions/setup-node@v3
+        id: node
+        with:
+          node-version: 18
+      - name: Get node_modules cache
+        uses: actions/cache@v3.0.2
+        id: node_modules
+        with:
+          path: |
+            **/node_modules
+          key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package-lock.json') }}-${{ steps.node.outputs.node-version }}
+      - name: Install genezio cli dev
+        run: cd genezio && npm install && npm run install-locally-dev
+      - name: Login to genezio
+        run: genezio login ${{ secrets.GENEZIO_TOKEN }}
+      - name: Deploy with genezio
+        working-directory: project
+        run: genezio deploy
