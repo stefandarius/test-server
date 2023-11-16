@@ -1,0 +1,5 @@
+name: multirepo-project
+region: us-east-1
+cloudProvider: genezio
+scripts:
+    preBackendDeploy: npm i
